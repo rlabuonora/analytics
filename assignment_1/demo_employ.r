@@ -44,3 +44,32 @@ names(which(sapply(CPS, function(x) any(is.na(x)))))
 table(CPS$Region, is.na(CPS$Married))
 table(CPS$Sex, is.na(CPS$Married))
 table(CPS$Age, is.na(CPS$Married)) ## YES!
+
+
+## How many states had all interviewees living in a non-metropolitan area (aka they have a missing MetroAreaCode value)? For this question, treat the District of Columbia as a state (even though it is not technically a state).
+
+tab <- table(is.na(CPS$MetroAreaCode), CPS$State)
+length(which(tab[1,]==0))
+## [1] 2
+length(which(tab[2,]==0))
+## [1] 3
+
+## Which region of the United States has the largest proportion of interviewees living in a non-metropolitan area?
+
+reg_tab <- table(is.na(CPS$MetroAreaCode), CPS$Region)
+props <- sort(reg_tab[2,] / (reg_tab[2,] + reg_tab[1,]))
+names(sort(props, decreasing=TRUE)[1])
+
+## Which state has a proportion of interviewees
+## living in a non-metropolitan area closest to 30%?
+names(sort(tapply(is.na(CPS$MetroAreaCode), CPS$State, function(x) { abs(mean(x) - 0.3) })))[1]
+
+## [1] "Wisconsin"
+
+## Which state has the largest proportion of
+## non-metropolitan interviewees, ignoring
+## states where all interviewees were non-metropolitan?
+metro<- tapply(is.na(CPS$MetroAreaCode), CPS$State, function(x) { mean(x) })
+
+names(sort(metro[which(metro != 1)], decreasing = TRUE))[1]
+## [1] "Montana"
