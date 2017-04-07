@@ -131,3 +131,33 @@ setdiff(after, before)
 sum(is.na(CPS$Country))
 ## [1] 176
 
+## Among all interviewees born outside of North America,
+## which country was the most common place of birth?
+sort(table(CPS$Country))["Philippines"]
+## Philippines 
+##         839
+
+## What proportion of the interviewees from the
+## "New York-Northern New Jersey-Long Island, NY-NJ-PA"
+## metropolitan area have a country of birth that is not the United States?
+## For this computation, don't include people from
+## this metropolitan area who have a missing country of birth.
+
+metro <- subset(CPS, CPS$MetroArea=="New York-Northern New Jersey-Long Island, NY-NJ-PA")
+table(metro$Country=="United States")["FALSE"] /nrow(metro)
+##     FALSE 
+## 0.3083749
+
+## Which metropolitan area has the largest number
+## (note -- not proportion) of interviewees
+## with a country of birth in India? 
+
+names(sort(tapply(CPS$Country=="India", CPS$MetroArea, sum, na.rm=TRUE), decreasing = TRUE)[1])
+## [1] "New York-Northern New Jersey-Long Island, NY-NJ-PA"
+
+names(sort(tapply(CPS$Country=="Brazil", CPS$MetroArea, sum, na.rm=TRUE), decreasing = TRUE)[1])
+## [1] "Boston-Cambridge-Quincy, MA-NH"
+
+names(sort(tapply(CPS$Country=="Somalia", CPS$MetroArea, sum, na.rm=TRUE), decreasing = TRUE)[1])
+## [1] "Minneapolis-St Paul-Bloomington, MN-WI"
+
