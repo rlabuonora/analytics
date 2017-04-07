@@ -73,3 +73,61 @@ metro<- tapply(is.na(CPS$MetroAreaCode), CPS$State, function(x) { mean(x) })
 
 names(sort(metro[which(metro != 1)], decreasing = TRUE))[1]
 ## [1] "Montana"
+## Read these two dictionaries into data frames MetroAreaMap and CountryMap.
+CountryMap <- read.csv("CountryCodes.csv")
+MetroAreaMap <- read.csv("MetroAreaCodes.csv")
+
+nrow(CountryMap)
+## [1] 149
+nrow(MetroAreaMap)
+## [1] 271
+
+before <- names(CPS)
+CPS <- merge(CPS, MetroAreaMap, by.x="MetroAreaCode", by.y="Code", all.x=TRUE)
+after <- names(CPS)
+
+setdiff(after, before)
+## [1] "MetroArea"
+sum(is.na(CPS$MetroArea))
+## [1] 34238
+
+## Which of the following metropolitan areas
+## has the largest number of interviewees?
+
+metroAreas <- c("Atlanta-Sandy Springs-Marietta, GA",
+                "Baltimore-Towson, MD",
+                "Boston-Cambridge-Quincy, MA-NH",
+                "San Francisco-Oakland-Fremont, CA")
+
+names(sort(table(CPS$MetroArea)[metroAreas], decreasing=TRUE)[1])
+## [1] "Boston-Cambridge-Quincy, MA-NH"
+
+
+## Which metropolitan area has the highest proportion of
+## interviewees of Hispanic ethnicity?
+
+names(sort(tapply(CPS$Hispanic, CPS$MetroArea, mean), decreasing=TRUE))[1]
+## [1] "Laredo, TX"
+
+## determine the number of metropolitan areas in the
+## United States from which at least 20% of interviewees are Asian.
+v <- tapply(CPS$Race=="Asian", CPS$MetroArea, mean)
+length(v[which(v > 0.2)])
+## [1] 4
+
+## which metropolitan area has the smallest proportion of interviewees who have received no high school diploma.
+names(sort(tapply(CPS$Education=="No high school diploma", CPS$MetroArea, mean, na.rm=TRUE))[1])
+## [1] "Iowa City, IA"
+
+## What is the name of the variable added to the CPS data frame by this merge operation?
+before <- names(CPS)
+CPS <- merge(CPS, CountryMap, by.x="CountryOfBirthCode", by.y="Code", all.x=TRUE)
+after <- names(CPS)
+setdiff(after, before)
+## [1] "Country"
+
+## How many interviewees have a missing value
+## for the new country of birth variable?
+sum(is.na(CPS$Country))
+## [1] 176
+
