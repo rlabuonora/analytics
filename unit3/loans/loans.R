@@ -61,9 +61,41 @@ falsos/total
 # of guessing every loan would be paid back in full 
 # (accuracy 2413/2873=0.8399).
 
-pred.obj <- prediction(loans_test$preds, loans_test$reference)
+pred.obj <- prediction(loans_test$prob, loans_test$reference)
 
 auc.perf = performance(pred.obj, measure = "auc")
 auc.perf@y.values
-perf <- performance(pred.obj, "tpr", "fpr")
-plot(perf)
+
+
+# Using the training set, build a bivariate logistic regression model 
+# (aka a logistic regression model with a single independent variable) 
+# that predicts the dependent variable not.fully.paid using only the 
+# variable int.rate.
+
+bivariate_model <- glm(not.fully.paid~int.rate, 
+                        data=loans_train, family=binomial(link="logit"))
+
+loans_test$bivariate_probs <- predict(bivariate_model, loans_test, type="response")
+loans_test$bivariate_preds <- loans_test$bivariate_probs > 0.5
+
+
+conf_matrix_bivariate <- confusionMatrix(factor(loans_test$bivariate_preds), 
+                                         factor(loans_test$reference))
+
+# Make test set predictions for the bivariate model. 
+# What is the highest predicted probability of a loan 
+# not being paid in full on the testing set?
+
+max(loans_test$bivariate_probs)
+
+# With a logistic regression cutoff of 0.5,
+# how many loans would be predicted as not 
+# being paid in full on the testing set?
+sum(loans_test$bivariate_probs>0.5)
+
+# What is the test set AUC of the bivariate model?
+
+pred.obj <- prediction(loans_test$bivariate_probs, loans_test$reference)
+
+auc.perf = performance(pred.obj, measure = "auc")
+auc.perf@y.values
