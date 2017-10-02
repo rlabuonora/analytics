@@ -3,6 +3,8 @@ library(mice)
 library(caTools)
 library(caret)
 library(ROCR)
+library(dplyr)
+
 set.seed(144)
 
 loans <- read_csv("loans.csv")
@@ -99,3 +101,39 @@ pred.obj <- prediction(loans_test$bivariate_probs, loans_test$reference)
 
 auc.perf = performance(pred.obj, measure = "auc")
 auc.perf@y.values
+
+
+# How much does a $10 investment with an annual interest rate of 6% 
+# pay back after 3 years, using continuous compounding of interest?
+10 * exp(0.06*3)
+# 11.97217
+
+# While the investment has value c * exp(rt) dollars after collecting interest, 
+# the investor had to pay $c for the investment. 
+# What is the profit to the investor if the investment is paid back in full?
+# c * exp(rt) - c
+loans_test$profit <- exp(loans_test$int.rate*3) - 1
+loans_test$profit[loans_test$not.fully.paid == 1] <- -1
+
+max(loans_test$profit) * 10
+# 8.894769
+
+high_interest = subset(loans_test, int.rate >= 0.15)
+mean(high_interest$profit)
+#  0.2251015
+summary(high_interest$profit)
+
+(table(high_interest$not.fully.paid) /nrow(high_interest))["1"]
+# 1 
+# 0.2517162
+
+# Find the highest predicted risk that we will include by typing
+cutoff <- sort(high_interest$bivariate_probs, decreasing=FALSE)[100]
+selected_loans <- high_interest %>% arrange(prob) %>% head(100)
+
+
+sum(selected_loans$profit)
+# 31.27825
+table(selected_loans$not.fully.paid)["1"]
+# 1 
+# 19
